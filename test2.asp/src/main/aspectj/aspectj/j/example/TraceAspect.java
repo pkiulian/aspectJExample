@@ -1,0 +1,78 @@
+package aspectj.j.example;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Aspect
+public class TraceAspect {
+	private static final Logger log = LoggerFactory.getLogger(TraceAspect.class);
+
+	private static final String CSV_FILE_PATH = "execution_times.csv";
+	
+	public TraceAspect() {
+		log.info("TraceAspect initialized");
+	}
+
+//    @Pointcut("execution(* aspectj.j.example..*(..)) && !within(aspectj.j.example.TraceAspect)")    
+//    public void traceMethods() { 
+//        // Pointcut definition
+//    }
+
+	// Define the pointcut specifically for insertManyItems in HeavyComp
+	@Pointcut("execution(* aspectj.j.example.HeavyComp.insertManyItems(..))")
+	public void insertManyItemsMethod() {
+		// Pointcut definition for the specific method
+	}
+
+//    
+//    // Define a pointcut expression to match the desired methods
+//    @After("traceMethods()")
+//    public void logAfter(JoinPoint joinPoint) {    	
+//        log.info("Executed method: " + joinPoint.getSignature());
+//    }
+
+	// Profile execution time only for insertManyItems method
+	@Around("insertManyItemsMethod()")
+	public Object profileMethodExecution(ProceedingJoinPoint joinPoint) throws Throwable {
+
+		Object[] args = joinPoint.getArgs(); // This will give you an array of parameters
+
+		long start = System.currentTimeMillis();
+
+		Object result = joinPoint.proceed();
+
+		long end = System.currentTimeMillis();
+		long executionTime = end - start;
+
+		log.info("Executed method: {} with args: {} in {} ms", joinPoint.getSignature(), args, executionTime);
+		saveExecutionDataToCSV(joinPoint.getSignature().toString(), executionTime);
+
+		return result;
+	}
+
+	private void saveExecutionDataToCSV(String signature, long executionTime) {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(CSV_FILE_PATH, true))) {
+            // Append header if file is empty
+			
+            if (new java.io.File(CSV_FILE_PATH).length() == 0) {
+                writer.write("Method Signature,Execution Time (ms)");
+                writer.newLine();
+            }
+            // Write the method signature and execution time
+            writer.write(String.format("%s,%d", signature, executionTime));
+            writer.newLine();
+        } catch (IOException e) {
+            log.error("Error writing to CSV file: {}", e.getMessage());
+        }
+	}
+}
