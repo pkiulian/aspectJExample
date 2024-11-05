@@ -55,24 +55,38 @@ public class TraceAspect {
 		long executionTime = end - start;
 
 		log.info("Executed method: {} with args: {} in {} ms", joinPoint.getSignature(), args, executionTime);
-		saveExecutionDataToCSV(joinPoint.getSignature().toString(), executionTime);
+		saveExecutionDataToCSV(joinPoint.getSignature().toString(), args, executionTime);
 
 		return result;
 	}
 
-	private void saveExecutionDataToCSV(String signature, long executionTime) {
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter(CSV_FILE_PATH, true))) {
-            // Append header if file is empty
-			
-            if (new java.io.File(CSV_FILE_PATH).length() == 0) {
-                writer.write("Method Signature,Execution Time (ms)");
-                writer.newLine();
-            }
-            // Write the method signature and execution time
-            writer.write(String.format("%s,%d", signature, executionTime));
-            writer.newLine();
-        } catch (IOException e) {
-            log.error("Error writing to CSV file: {}", e.getMessage());
-        }
-	}
+	 private void saveExecutionDataToCSV(String signature, Object[] args, long executionTime) {
+	        try (BufferedWriter writer = new BufferedWriter(new FileWriter(CSV_FILE_PATH, true))) {
+	            // Append header if file is empty
+	            if (new java.io.File(CSV_FILE_PATH).length() == 0) {
+	                writer.write("Method Signature,Arguments,Execution Time (ms)");
+	                writer.newLine();
+	            }
+
+	            // Format arguments as a string
+	            String argsFormatted = formatArguments(args);
+
+	            // Write the method signature, arguments, and execution time
+	            writer.write(String.format("%s,%s,%d", signature, argsFormatted, executionTime));
+	            writer.newLine();
+	        } catch (IOException e) {
+	            log.error("Error writing to CSV file: {}", e.getMessage());
+	        }
+	    }
+
+	    private String formatArguments(Object[] args) {
+	        StringBuilder sb = new StringBuilder();
+	        for (int i = 0; i < args.length; i++) {
+	            sb.append(args[i]);
+	            if (i < args.length - 1) {
+	                sb.append("; "); // Separate multiple arguments with a semicolon
+	            }
+	        }
+	        return sb.toString();
+	    }
 }

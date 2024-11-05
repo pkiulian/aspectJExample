@@ -20,7 +20,7 @@ class HeavyCompTest {
 
 	@Test
 	void stressInsertManyItems() {
-		for (int i = 0; i < 30; i++) {
+		for (int i = 0; i < 500; i++) {
 			Random random = new Random(System.currentTimeMillis());
 			int val = random.nextInt(10000) + 1;
 			assertEquals(val, heavy.insertManyItems(val));

@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: test2.asp.HeavyCompTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.849 s -- in test2.asp.HeavyCompTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 112.0 s -- in test2.asp.HeavyCompTest

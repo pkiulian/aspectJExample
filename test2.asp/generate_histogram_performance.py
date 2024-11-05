@@ -8,30 +8,34 @@ def generate_histogram(csv_file, output_html):
     data = pd.read_csv(csv_file)
 
     # Ensure the columns are named correctly
-    if 'Execution Time (ms)' not in data.columns:
-        raise ValueError("CSV must contain 'Execution Time (ms)' column.")
-    
-    # Get execution times and generate a request number for the x-axis
+    if 'Execution Time (ms)' not in data.columns or 'Arguments' not in data.columns:
+        raise ValueError("CSV must contain 'Execution Time (ms)' and 'Arguments' columns.")
+
+    # Get execution times and arguments for hover info
     execution_times = data['Execution Time (ms)']
+    arguments = data['Arguments'].astype(str)  # Convert to string for display
     request_numbers = np.arange(1, len(execution_times) + 1)
 
-    # Create bar data
+    # Create bar data with hover information
     bar = go.Bar(
         x=request_numbers,
         y=execution_times,
         name='Execution Times',
-        marker=dict(color='blue', opacity=0.75)
+        marker=dict(color='blue', opacity=0.75),
+        hoverinfo='text',
+        text=[f'Execution Time: {time} ms<br>Arguments: {arg}' for time, arg in zip(execution_times, arguments)]
     )
 
     # Calculate percentiles
     p70 = np.percentile(execution_times, 70)
     p80 = np.percentile(execution_times, 80)
     p90 = np.percentile(execution_times, 90)
+    p99 = np.percentile(execution_times, 99)  # Calculate P99
 
     # Create layout for the plot
     layout = go.Layout(
         title='Execution Times per Request',
-        xaxis=dict(title='Execution Number'),
+        xaxis=dict(title='Request Number'),
         yaxis=dict(title='Execution Time (ms)'),
         showlegend=True
     )
@@ -40,9 +44,9 @@ def generate_histogram(csv_file, output_html):
     fig = go.Figure(data=[bar], layout=layout)
     
     # Add percentile lines
-    percentiles = [p70, p80, p90]
-    colors = ['orange', 'yellowgreen', 'red']  # Colors for P70, P80, P90
-    labels = [f'P70: {p70:.2f} ms', f'P80: {p80:.2f} ms', f'P90: {p90:.2f} ms']
+    percentiles = [p70, p80, p90, p99]
+    colors = ['orange', 'yellowgreen', 'red', 'purple']  # Colors for P70, P80, P90, P99
+    labels = [f'P70: {p70:.2f} ms', f'P80: {p80:.2f} ms', f'P90: {p90:.2f} ms', f'P99: {p99:.2f} ms']
 
     for p, color, label in zip(percentiles, colors, labels):
         fig.add_trace(go.Scatter(

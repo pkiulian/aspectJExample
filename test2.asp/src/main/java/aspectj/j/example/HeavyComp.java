@@ -15,7 +15,7 @@ public class HeavyComp {
 			Random randomPrice = new Random(System.currentTimeMillis());
 			Random randomName = new Random(System.currentTimeMillis());
 
-			for (int j = 0; j < i; j++) {
+			for (int j = 0; j < 2*i; j++) {
 				Math.sin(i);
 				Math.sqrt(i);
 			}
